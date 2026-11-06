@@ -8,7 +8,7 @@ package se.ltu.resultatregistrering.controller;
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
-import se.ltu.resultatregistrering.model.Modules;
+import se.ltu.resultatregistrering.model.Module;
 import se.ltu.resultatregistrering.repository.ModuleRepository;
 
 @RestController
@@ -22,7 +22,7 @@ public class ModuleController {
     }
 
     @GetMapping
-    public List<Modules> getAllModules() {
+    public List<Module> getAllModules() {
         return moduleRepository.findAll();
     }
 }
