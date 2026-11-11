@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import se.ltu.resultatregistrering.model.Student;
-import se.ltu.resultatregistrering.repository.StudentRepository;
+import se.ltu.resultatregistrering.repository.studentits.StudentRepository;
 
 @RestController
 @RequestMapping("/api/students")

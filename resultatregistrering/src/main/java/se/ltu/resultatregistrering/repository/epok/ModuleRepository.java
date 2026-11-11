@@ -1,5 +1,5 @@
 
-package se.ltu.resultatregistrering.repository;
+package se.ltu.resultatregistrering.repository.epok;
 
 import se.ltu.resultatregistrering.model.Module;
 import se.ltu.resultatregistrering.model.ModuleId;

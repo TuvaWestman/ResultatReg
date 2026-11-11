@@ -9,7 +9,9 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import se.ltu.resultatregistrering.model.Course;
-import se.ltu.resultatregistrering.repository.CourseRepository;
+import se.ltu.resultatregistrering.repository.epok.CourseRepository;
+import org.springframework.http.ResponseEntity;
+
 
 @RestController
 @RequestMapping("/api/courses")
@@ -25,4 +27,13 @@ public class CourseController {
     public List<Course> getAllCourses() {
         return courseRepository.findAll();
     }
+    
+    @GetMapping("/{courseCode}")
+public ResponseEntity<Course> getCourse(
+        @PathVariable String courseCode) {
+
+    return courseRepository.findById(courseCode)
+            .map(ResponseEntity::ok)
+            .orElseGet(() -> ResponseEntity.notFound().build());
+}
 }

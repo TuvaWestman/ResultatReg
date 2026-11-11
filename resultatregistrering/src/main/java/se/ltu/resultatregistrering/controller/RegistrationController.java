@@ -9,7 +9,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import se.ltu.resultatregistrering.model.RegistrationLog;
-import se.ltu.resultatregistrering.repository.RegistrationLogRepository;
+import se.ltu.resultatregistrering.repository.ladok.RegistrationLogRepository;
 
 @RestController
 @RequestMapping("/api/registrations")

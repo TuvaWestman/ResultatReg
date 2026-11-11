@@ -1,6 +1,6 @@
 
 
-package se.ltu.resultatregistrering.repository;
+package se.ltu.resultatregistrering.repository.epok;
 
 import se.ltu.resultatregistrering.model.Course;
 import org.springframework.data.jpa.repository.JpaRepository;

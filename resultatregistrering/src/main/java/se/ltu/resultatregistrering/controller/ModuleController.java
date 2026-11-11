@@ -9,7 +9,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import se.ltu.resultatregistrering.model.Module;
-import se.ltu.resultatregistrering.repository.ModuleRepository;
+import se.ltu.resultatregistrering.repository.epok.ModuleRepository;
 
 @RestController
 @RequestMapping("/api/modules")

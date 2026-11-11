@@ -1,7 +1,7 @@
 
 
 
-package se.ltu.resultatregistrering.repository;
+package se.ltu.resultatregistrering.repository.studentits;
 
 import se.ltu.resultatregistrering.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;

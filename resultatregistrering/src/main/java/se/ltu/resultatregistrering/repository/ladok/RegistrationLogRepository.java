@@ -3,7 +3,7 @@
 
 
 
-package se.ltu.resultatregistrering.repository;
+package se.ltu.resultatregistrering.repository.ladok;
 
 import se.ltu.resultatregistrering.model.RegistrationLog;
 import org.springframework.data.jpa.repository.JpaRepository;
