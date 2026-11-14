@@ -25,4 +25,11 @@ public class ResultController {
     public List<Result> getAllResults() {
         return resultRepository.findAll();
     }
+
+
+    @PostMapping
+    public Result createResult(@RequestBody Result result) {
+        result.setStatus("registrerad");
+        return resultRepository.save(result);
+    }
 }
