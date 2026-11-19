@@ -4,6 +4,8 @@
 package se.ltu.resultatregistrering.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import se.ltu.resultatregistrering.model.Result;
 import se.ltu.resultatregistrering.model.RegistrationLog;
 import se.ltu.resultatregistrering.repository.ladok.ResultRepository;
@@ -18,11 +20,14 @@ public class LadokService {
     public LadokService(
             ResultRepository resultRepository,
             RegistrationLogRepository registrationLogRepository) {
+
         this.resultRepository = resultRepository;
         this.registrationLogRepository = registrationLogRepository;
     }
 
+    @Transactional
     public Result registerResult(Result result) {
+
         Result savedResult = resultRepository.save(result);
 
         RegistrationLog log = new RegistrationLog();

@@ -169,14 +169,14 @@
 
         <div class="control-group">
             <label for="courseSelect">Kurskod</label>
-            <select id="courseSelect" onchange="loadModules()">
+            <select id="courseSelect" onchange="loadModules(); clearResults()">
                 <option value="">-</option>
             </select>
         </div>
 
         <div class="control-group">
             <label for="assignmentSelect">Uppgift i Canvas</label>
-            <select id="assignmentSelect">
+            <select id="assignmentSelect" onchange="clearResults()">
                 <option value="Inlämningsuppgift 1">Inlämningsuppgift 1</option>
                 <option value="Slutprojekt">Slutprojekt</option>
                 <option value="Tentamen">Tentamen</option>
@@ -185,12 +185,20 @@
 
         <div class="control-group">
             <label for="moduleSelect">Modul i Ladok</label>
-            <select id="moduleSelect">
+            <select id="moduleSelect" onchange="clearResults()">
                 <option value="">-</option>
             </select>
         </div>
 
     </div>
+    
+    <div style="text-align: right; margin: -14px 0 24px;">
+    <button class="btn btn-primary"
+            type="button"
+            onclick="showResults()">
+        Visa
+    </button>
+</div>
 
     <div class="action-bar">
 
@@ -244,7 +252,7 @@
 
         <tbody id="studentTableBody">
         <tr>
-            <td colspan="7">Laddar studenter...</td>
+            <td colspan="7">Välj kurs och modul och klicka på Visa.</td>
         </tr>
         </tbody>
 
@@ -256,11 +264,11 @@
 
     let allModules = [];
 
-    window.onload = async function() {
-        await loadCourses();
-        await fetchAllModules();
-        await loadStudents();
-    };
+window.onload = async function() {
+    await loadCourses();
+    await fetchAllModules();
+    clearResults();
+};
 
 
     // Hämta alla kurser från Epok
@@ -326,67 +334,151 @@
 
     // Hämta studenter
 
-    async function loadStudents() {
-        const res = await fetch('/api/students');
+// Rensa tabellen
+function clearResults() {
+    document.getElementById('studentTableBody').innerHTML =
+        '<tr><td colspan="7">Välj kurs och modul och klicka på Visa.</td></tr>';
 
-        if (!res.ok) {
-            throw new Error('Kunde inte hämta studenter');
+    document.getElementById('masterCheck').checked = false;
+    updateCount();
+}
+
+// Hämta och visa resultat från REST API
+async function showResults() {
+
+    const courseCode =
+        document.getElementById('courseSelect').value;
+
+    const assignment =
+        document.getElementById('assignmentSelect').value;
+
+    const moduleCode =
+        document.getElementById('moduleSelect').value;
+
+    if (!courseCode || !moduleCode) {
+        alert('Välj kurs och modul först!');
+        return;
+    }
+
+    const tbody = document.getElementById('studentTableBody');
+    tbody.innerHTML =
+        '<tr><td colspan="7">Hämtar resultat...</td></tr>';
+
+    try {
+        // Hämta student-, Canvas- och Ladok-data
+        const canvasUrl = '/api/canvas/grades?' +
+            new URLSearchParams({ courseCode, assignment });
+
+        const responses = await Promise.all([
+            fetch('/api/students'),
+            fetch(canvasUrl),
+            fetch('/api/results')
+        ]);
+
+        if (responses.some(r => !r.ok)) {
+            throw new Error('Ett API svarade med fel');
         }
 
-        const students = await res.json();
-
-        const tbody = document.getElementById('studentTableBody');
+        const [students, canvasGrades, results] =
+            await Promise.all(responses.map(r => r.json()));
 
         tbody.innerHTML = '';
 
-        const mockCanvasGrades = ['G', 'VG', 'G', 'U', 'VG', '-'];
+        // Matcha omdömen och resultat med personnummer
+        const canvasMap = new Map(
+            canvasGrades.map(g => [g.personalNumber, g.grade])
+        );
 
-        students.slice(0, 15).forEach((s, index) => {
+        const ladokMap = new Map();
 
-            const canvasGrade = mockCanvasGrades[index % mockCanvasGrades.length];
+        results
+            .filter(r =>
+                r.courseCode === courseCode &&
+                r.moduleCode === moduleCode)
+            .forEach(r => {
+                const previous = ladokMap.get(r.personalNumber);
+                if (!previous ||
+                    r.examinationDate >= previous.examinationDate) {
+                    ladokMap.set(r.personalNumber, r);
+                }
+            });
+
+        // Visa studenter som har Canvas- eller Ladok-data
+        const visibleStudents = students.filter(s =>
+            canvasMap.has(s.personalNumber) ||
+            ladokMap.has(s.personalNumber)
+        );
+
+        for (const s of visibleStudents) {
+
+            const canvasGrade =
+                canvasMap.get(s.personalNumber) || '';
+
+            const ladok = ladokMap.get(s.personalNumber);
+            const grade = ladok ? ladok.grade : canvasGrade;
 
             const row = document.createElement('tr');
 
             row.innerHTML = `
                 <td>
-                    <input type="checkbox"
-                           class="row-check"
-                           data-pnr="${s.personalNumber}"
-                           onchange="updateCount()">
+                    <input type="checkbox" class="row-check"
+                        data-pnr="${s.personalNumber}"
+                        onchange="updateCount()"
+                        ${ladok ? 'disabled' : ''}>
                 </td>
 
                 <td>
                     <strong>${s.lastName}, ${s.firstName}</strong>
                     <br>
-                    <small style="color:#666;">
-                        ${s.username} | ${s.personalNumber}
-                    </small>
+                    <small>${s.username} | ${s.personalNumber}</small>
                 </td>
 
-                <td class="canvas-grade">${canvasGrade}</td>
+                <td class="canvas-grade">
+                    ${canvasGrade || '-'}
+                </td>
 
                 <td>
-                    <select class="ladok-grade">
+                    <select class="ladok-grade"
+                        ${ladok ? 'disabled' : ''}>
                         <option value="">-</option>
-                        <option value="U" ${canvasGrade === 'U' ? 'selected' : ''}>U</option>
-                        <option value="G" ${canvasGrade === 'G' ? 'selected' : ''}>G</option>
-                        <option value="VG" ${canvasGrade === 'VG' ? 'selected' : ''}>VG</option>
+                        <option value="U" ${grade === 'U' ? 'selected' : ''}>U</option>
+                        <option value="G" ${grade === 'G' ? 'selected' : ''}>G</option>
+                        <option value="VG" ${grade === 'VG' ? 'selected' : ''}>VG</option>
                     </select>
                 </td>
 
                 <td>
-                    <input type="date" class="exam-date">
+                    <input type="date" class="exam-date"
+                        value="${ladok ? ladok.examinationDate : ''}"
+                        ${ladok ? 'disabled' : ''}>
                 </td>
 
-                <td class="status-cell">-</td>
+                <td class="status-cell">
+                    ${ladok ? 'Registrerad' : '-'}
+                </td>
 
-                <td class="info-cell"></td>
+                <td class="info-cell">
+                    ${ladok ? 'Finns redan i Ladok' : ''}
+                </td>
             `;
 
             tbody.appendChild(row);
-        });
-    }
+        }
 
+        if (visibleStudents.length === 0) {
+            tbody.innerHTML =
+                '<tr><td colspan="7">Inga resultat hittades.</td></tr>';
+        }
+
+        document.getElementById('masterCheck').checked = false;
+        updateCount();
+
+    } catch (error) {
+        console.error(error);
+        tbody.innerHTML =
+            '<tr><td colspan="7">Fel vid hämtning av resultat.</td></tr>';
+    }
+}
 
     // Markera alla studenter
 
