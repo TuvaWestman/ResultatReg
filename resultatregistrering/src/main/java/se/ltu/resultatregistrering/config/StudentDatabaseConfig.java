@@ -5,6 +5,7 @@
 
 
 package se.ltu.resultatregistrering.config;
+import se.ltu.resultatregistrering.model.CourseEnrollment;
 
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -65,7 +66,7 @@ public DataSourceProperties studentDataSourceProperties() {
 
         return builder
                 .dataSource(dataSource)
-                .packages(Student.class)
+                .packages(Student.class, CourseEnrollment.class)
                 .persistenceUnit("studentits")
                 .properties(Map.of("hibernate.hbm2ddl.auto", "none"))
                 .build();

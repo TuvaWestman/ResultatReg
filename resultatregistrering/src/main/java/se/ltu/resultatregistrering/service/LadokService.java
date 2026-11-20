@@ -25,8 +25,8 @@ public class LadokService {
         this.registrationLogRepository = registrationLogRepository;
     }
 
-    @Transactional
-    public Result registerResult(Result result) {
+@Transactional("ladokTransactionManager")
+public Result registerResult(Result result) {
 
         Result savedResult = resultRepository.save(result);
 
